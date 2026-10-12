@@ -1,0 +1,22 @@
+import React from "react";
+
+const NavbarAppli: React.FC<any> = (props) => {
+  const {pageActive} = props;
+
+  return (
+    <>
+      {/* Navbar */}
+      <nav className="absolute top-0 left-0 w-full z-10 bg-transparent md:flex-row md:flex-nowrap md:justify-start flex items-center px-4 py-6">
+        <div className="w-full mx-autp items-center flex justify-between md:flex-nowrap flex-wrap md:px-10 px-4">
+          {/* Brand */}
+          <h2 className="text-white text-sm uppercase hidden md:inline-block font-semibold">
+            {pageActive}
+          </h2>
+        </div>
+      </nav>
+      {/* End Navbar */}
+    </>
+  );
+};
+
+export default NavbarAppli;

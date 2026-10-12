@@ -1,0 +1,8 @@
+# Copier hors du dépôt ; fournir un secret privé avant utilisation.
+db.url=jdbc:postgresql://127.0.0.1:5432/demo
+db.user=demo
+db.password=
+db.pool.max=20
+db.pool.min=2
+db.pool.idleTimeout=60000
+db.pool.connectionTimeout=30000

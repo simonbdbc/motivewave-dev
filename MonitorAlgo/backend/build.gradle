@@ -1,0 +1,59 @@
+plugins {
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+}
+
+group = 'com.monitoralgo'
+version = '1.0.0'
+// sourceCompatibility = '21'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // REST API, WebSocket, Mail, logging, etc.
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // JDBC Driver & HikariCP (prends les jars du dossier lib si tu veux forcer une version spécifique)
+    implementation files("${rootProject.projectDir}/lib/postgresql-42.7.3.jar")
+    implementation files("${rootProject.projectDir}/lib/HikariCP-5.1.0.jar")
+
+    // SLF4J pour logs (version jar si pas via Maven Central)
+    implementation files("${rootProject.projectDir}/lib/slf4j-api-2.0.13.jar")
+
+    // Commons IO et utilitaires
+    implementation 'commons-io:commons-io:2.15.1'
+    implementation 'org.simplejavamail:simple-java-mail:8.12.6'
+
+    // Lombok annotations (@Getter, @Setter).
+    // implementation 'org.projectlombok:lombok:1.18.30'
+    // annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // Tests (peux supprimer Spring Boot test si tu ne veux que du JUnit pur)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['-parameters']
+}
+
+tasks.withType(org.springframework.boot.gradle.tasks.bundling.BootJar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.withType(Tar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.withType(Zip).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

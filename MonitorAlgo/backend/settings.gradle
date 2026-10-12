@@ -1,0 +1,2 @@
+rootProject.name = 'MonitorAlgo'
+include 'admin', 'alerting', 'algo', 'api', 'config', 'core', 'monitoring', 'stats', 'tradesession', 'web'

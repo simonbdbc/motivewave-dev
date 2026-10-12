@@ -1,0 +1,18 @@
+services:
+    backend:
+        build:
+            context: .
+        restart: unless-stopped
+        user: "${UID}:${GID}"
+        ports:
+            - "8080:8080"
+        env_file: .env
+        environment:
+            - SPRING_PROFILES_ACTIVE=docker
+            - TZ=Europe/Paris
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - /etc/timezone:/etc/timezone:ro
+            - ${MOTIVEWAVE_LOG_FOLDER}:/logs/motivewave:ro
+            - ${STRATEGY_LOG_FOLDER}:/logs/strategy
+            - ${ALGO_LOG_FOLDER}:/logs/algo

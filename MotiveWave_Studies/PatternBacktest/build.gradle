@@ -1,0 +1,28 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation files("./lib/opencsv-5.9.jar")
+    implementation 'org.apache.commons:commons-compress:1.26.2'
+}
+
+application {
+    mainClass = 'backtest.BacktestPatternRenko'
+}
+
+tasks.named('run') {
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['--enable-preview']
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += ['--enable-preview']
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += ['--enable-preview']
+}

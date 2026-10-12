@@ -1,0 +1,16 @@
+[{
+    "name": "Polygon",
+    "symbol": "MATIC",
+    "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "decimals": 18
+}, {
+    "name": "Ecudor Token",
+    "symbol": "ECOR",
+    "address": "",
+    "decimals": 18
+}, {
+    "name": "Jarvis Synthetic Euro",
+    "symbol": "jEUR",
+    "address": "0x4e3Decbb3645551B8A19f0eA1678079FCB33fB4c",
+    "decimals": 18
+}]

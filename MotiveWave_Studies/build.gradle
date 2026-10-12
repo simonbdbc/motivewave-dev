@@ -1,0 +1,262 @@
+// =============================================
+// ✅ Commandes disponibles (exécuter via ./gradlew <tâche>)
+// ---------------------------------------------
+// clean            → Nettoie le dossier build/, dev/, jar/
+// classes          → Compile tous les fichiers .java
+// deploy           → Compile tous les fichiers .java et copie les .class et .properties dans dev/
+// cleanAndDeploy   → Fait clean, classes, deploy automatiquement
+// deployJar        → Génère un JAR contenant toutes les studies et le copie dans Extensions/lib/
+// deploySingleJar -Pstudy="chemin/fichier.java"
+//                  → Compile un seul fichier .java en JAR et le copie dans Extensions/lib/
+// =============================================
+
+plugins {
+    id 'java'
+}
+
+def userHome = System.getProperty('user.home')
+def extDir = file("${userHome}/MotiveWave Extensions")
+def outputDevDir = file("${extDir}/dev")
+def outputLibDir = file("${extDir}/ext")
+def libDir = file('lib')  // dossier contenant mwave_sdk.jar 
+def javaVersion = 24
+
+subprojects {
+    repositories {
+        mavenCentral()
+        flatDir { dirs rootProject.file('lib') }
+    }
+
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('java')) {
+            dependencies {
+                implementation files("${rootProject.projectDir}/lib/postgresql-42.7.3.jar")
+                implementation files("${rootProject.projectDir}/lib/HikariCP-5.1.0.jar")
+                implementation files("${rootProject.projectDir}/lib/slf4j-api-2.0.13.jar")
+                implementation files("${rootProject.projectDir}/lib/slf4j-simple-2.0.13.jar")
+            }
+        }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            include '**/*.java'
+        }
+        resources {
+            srcDirs = ['src']
+            include '**/*.properties'
+            exclude '**/db.properties'
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs libDir
+    }
+}
+
+dependencies {
+    implementation files("${libDir}/mwave_sdk.jar")
+    implementation files("${libDir}/postgresql-42.7.3.jar")
+    implementation files("${libDir}/HikariCP-5.1.0.jar")
+    implementation files("${libDir}/slf4j-api-2.0.13.jar")
+    implementation files("${libDir}/slf4j-simple-2.0.13.jar")
+}
+
+// Nettoyage des dossiers
+tasks.clean {
+    delete outputDevDir
+    delete outputLibDir
+    delete 'build'
+    delete 'jar'
+}
+
+// Crée les dossiers dev/ et ext/ s’ils n’existent pas
+tasks.register('prepareDevDir') {
+    doLast {
+        if (!outputDevDir.exists()) {
+            outputDevDir.mkdirs()
+            println "📁 Dossier dev créé : ${outputDevDir}"
+        }
+        if (!outputLibDir.exists()) {
+            outputLibDir.mkdirs()
+            println "📁 Dossier ext créé : ${outputLibDir}"
+        }
+    }
+}
+
+// Met à jour un fichier .last_updated pour que MotiveWave détecte le changement
+tasks.register('updateTimestamp') {
+    doLast {
+        def updateFile = file("${extDir}/.last_updated")
+        if (!updateFile.exists()) updateFile.createNewFile()
+        updateFile.setLastModified(System.currentTimeMillis())
+        println "⏱️ .last_updated mis à jour à ${new Date()}"
+    }
+}
+
+// Tâche principale de déploiement vers MotiveWave (compilation + copie vers dev/ + copie lib/ vers ext/)
+tasks.register('deployToMotiveWaveExtensions') {
+    dependsOn 'classes', 'prepareDevDir'
+    doLast {
+        def compiled = fileTree("${buildDir}/classes/java/main").matching {
+            include '**/*.class'
+        }
+        if (compiled.isEmpty()) {
+            println "⚠️ Aucun fichier compilé trouvé dans ${buildDir}/classes/java/main"
+        } else {
+            copy {
+                from compiled
+                into outputDevDir
+            }
+            copy {
+                from sourceSets.main.resources
+                into outputDevDir
+            }
+            println "✅ Fichiers copiés dans ${outputDevDir}"
+        }
+
+        // Copie tout le dossier lib/ (les jars) dans ext/
+        copy {
+            from libDir
+            into outputLibDir
+        }
+        println "📚 Dossier lib/ copié dans ${outputLibDir}"
+    }
+    finalizedBy 'updateTimestamp'
+}
+
+// Tâche de confort : compile et déploie en une seule commande
+tasks.register('buildAndDeploy') {
+    group = 'build'
+    dependsOn 'clean', 'classes'
+    description = 'Nettoie, compile et déploie vers MotiveWave Extensions'
+}
+
+// Tâche "deploy" personnalisée = compile + copie vers dev/ et ext/
+tasks.register('deploy') {
+    group = 'build'
+    dependsOn 'classes', 'deployToMotiveWaveExtensions'
+    description = 'Compile et déploie tous les fichiers vers MotiveWave Extensions'
+}
+
+// Génère un JAR avec toutes les classes compilées
+tasks.register('deployJar', Jar) {
+    group = 'build'
+    description = 'Génère un JAR global avec toutes les studies Java'
+    dependsOn 'classes'
+    archiveBaseName.set('motivewave_studies')
+    destinationDirectory.set(file('jar'))
+    from sourceSets.main.output
+    manifest {
+        attributes(
+            'Implementation-Title': 'MotiveWave Studies',
+            'Implementation-Version': '1.0'
+        )
+    }
+
+    doLast {
+        copy {
+            from archiveFile.get().asFile
+            into "${extDir}/lib"
+        }
+        println "✅ JAR global copié dans ${extDir}/lib"
+    }
+}
+
+// Génère un JAR contenant uniquement une Study spécifique (à appeler avec -Pstudy=...)
+// Dans le menu = "SBdev Studies"
+tasks.register('deploySingleSbdevJar', Jar) {
+    description = 'Compile et pack uniquement une Study Java spécifique en JAR (utiliser -Pstudy=chemin/vers/Fichier.java)'
+
+    doFirst {
+        def studyParam = project.findProperty("study")
+        if (!studyParam) {
+            throw new Exception("❌ Veuillez spécifier le fichier via -Pstudy=chemin/vers/Fichier.java (relatif à src/)")
+        }
+
+        def originalFile = file("src/${studyParam}")
+        if (!originalFile.exists()) {
+            throw new Exception("❌ Fichier ${originalFile} introuvable.")
+        }
+
+        def fileName = studyParam.tokenize('/\\').last().replace('.java', '')
+        def classOutputDir = file("${buildDir}/single-classes")
+        def patchedSrcDir = file("${buildDir}/patched")
+        def patchedFile = file("${patchedSrcDir}/${fileName}.java")
+
+        inputs.file(originalFile)
+        outputs.file("jar/${fileName}.jar")
+
+        // Préparation du fichier temporaire avec remplacement
+        patchedSrcDir.mkdirs()
+        def originalContent = originalFile.getText("UTF-8")
+        def patchedContent = originalContent.replace('namespace = "com.sbdev", id = "', 'namespace = "com.sbdev", id = "SBDEV_')
+        patchedContent = patchedContent.replace('", name = "', '", name = "SB Dev ')
+        patchedContent = patchedContent.replace('", label = "', '", label = "SB Dev ')
+        patchedContent = patchedContent.replace('menu = "Custom Studies"', 'menu = "SB Dev"')
+        patchedFile.write(patchedContent, "UTF-8")
+        println "🛠️ Remplacement effectué dans : ${patchedFile}"
+
+        // Compilation du fichier modifié
+        classOutputDir.mkdirs()
+        ant.javac(
+            srcdir: patchedSrcDir,
+            includes: patchedFile.name,
+            destdir: classOutputDir,
+            includeantruntime: false,
+            source: javaVersion,
+            target: javaVersion,
+            classpath: configurations.compileClasspath.asPath
+        )
+
+        archiveBaseName.set(fileName.toLowerCase())
+        destinationDirectory.set(file('jar'))
+        from classOutputDir
+
+        manifest {
+            attributes(
+                'Implementation-Title': fileName,
+                'Implementation-Version': '1.0'
+            )
+        }
+    }
+
+    doLast {
+        copy {
+            from archiveFile.get().asFile
+            into "${extDir}/lib"
+        }
+        println "✅ ${fileName}.jar copié dans ${extDir}/lib"
+
+        // Nettoyage
+        file("${buildDir}/single-classes").deleteDir()
+        file("${buildDir}/patched").deleteDir()
+        println "🧹 Répertoires temporaires supprimés"
+    }
+}
+
+// Affiche les fichiers compilés
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Xlint:unchecked']
+    doFirst {
+        println "🔍 Compilation des fichiers sources :"
+        source.each { println it }
+    }
+}
+
+// Les sous-projets ne doivent jamais embarquer une configuration privée.
+allprojects {
+    tasks.withType(ProcessResources).configureEach { exclude '**/db.properties' }
+    tasks.withType(Jar).configureEach { exclude '**/db.properties' }
+}

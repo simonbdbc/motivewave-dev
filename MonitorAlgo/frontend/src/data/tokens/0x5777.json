@@ -1,0 +1,16 @@
+[{
+    "name": "Polygon",
+    "symbol": "MATIC",
+    "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "decimals": 18
+}, {
+    "name": "Ecudor Token",
+    "symbol": "ECOR",
+    "address": "",
+    "decimals": 18
+}, {
+    "name": "USD Coin (PoS)",
+    "symbol": "USDC",
+    "address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    "decimals": 6
+}]

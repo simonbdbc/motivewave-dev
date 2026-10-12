@@ -1,0 +1,16 @@
+[{
+    "name": "Fantom",
+    "symbol": "FTM",
+    "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "decimals": 18
+}, {
+    "name": "Ecudor Token",
+    "symbol": "ECOR",
+    "address": "",
+    "decimals": 18
+}, {
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "address": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+    "decimals": 6
+}]

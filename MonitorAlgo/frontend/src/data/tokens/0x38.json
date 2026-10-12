@@ -1,0 +1,16 @@
+[{
+    "name": "Binance Coin",
+    "symbol": "BNB",
+    "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "decimals": 18
+}, {
+    "name": "Ecudor Token",
+    "symbol": "ECOR",
+    "address": "",
+    "decimals": 18
+}, {
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+    "decimals": 18
+}]

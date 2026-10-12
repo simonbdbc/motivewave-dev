@@ -1,0 +1,5 @@
+rootProject.name = 'MotiveWave_Studies'
+include 'PatternBacktest'
+project(':PatternBacktest').projectDir = file('PatternBacktest')
+include 'BacktestDbInitializer'
+project(':BacktestDbInitializer').projectDir = file('BacktestDbInitializer')

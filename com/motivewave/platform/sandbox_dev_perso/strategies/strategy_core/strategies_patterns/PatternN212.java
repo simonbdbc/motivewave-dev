@@ -1,0 +1,140 @@
+package custom_studies.strategies.strategy_core.strategies_patterns;
+
+import java.util.Map;
+
+import custom_studies.strategies.strategy_core.HelperStrat;
+import custom_studies.strategies.strategy_core.InterfacePattern;
+import custom_studies.strategies.strategy_core.HelperFormat.BracketResult;
+import custom_studies.strategies.strategy_core.HelperFormat.ColorCountResult;
+import custom_studies.strategies.strategy_core.HelperFormat.DirectionResult;
+import custom_studies.strategies.strategy_core.HelperFormat.HiloResult;
+import custom_studies.strategies.strategy_core.HelperFormat.RenkoResult;
+import custom_studies.strategies.strategy_core.HelperFormat.StrengthResult;
+
+// Retracement de Brick sur Tendance
+public class PatternN212 implements InterfacePattern {
+
+    private static final String GREEN = "green";
+    private static final String RED = "red";
+
+    private String[] colorHistory;
+    private String[] hiLoColor1History;
+    private String[] hiLoColor2History;
+    private Double[] hiLoPrice1History;
+    private Double[] hiLoPrice2History;
+    private Double price;
+    private float close;
+
+    public PatternN212(String[] colorHistory, String[] hiLoColor1History, String[] hiLoColor2History,
+            Double[] hiLoPrice1History, Double[] hiLoPrice2History, Double price, float close) {
+        this.colorHistory = colorHistory;
+        this.hiLoColor1History = hiLoColor1History;
+        this.hiLoColor2History = hiLoColor2History;
+        this.hiLoPrice1History = hiLoPrice1History;
+        this.hiLoPrice2History = hiLoPrice2History;
+        this.price = price;
+        this.close = close;
+    }
+
+    public BracketResult getBracket() {
+        // Double tpTarget = 30.00; // 30 points / 120 ticks
+        Double tpTarget = 60.00 / 4; // 30 points / 120 ticks
+        Double slTarget = 60.00 / 4; // 15 points / 60 ticks
+
+        return new BracketResult(tpTarget, slTarget);
+    }
+
+    public RenkoResult checkRenkoPatterns() {
+
+        // 8 GREEN - retracement 1 - TP 1
+        Boolean patternHigh1 = colorHistory[0].equals(GREEN)
+                && colorHistory[1].equals(RED)
+                && colorHistory[2].equals(GREEN)
+                && colorHistory[3].equals(GREEN)
+                && colorHistory[4].equals(GREEN);
+        // 8 RED - retracement 1 - TP 1
+        Boolean patternLow1 = colorHistory[0].equals(RED)
+                && colorHistory[1].equals(GREEN)
+                && colorHistory[2].equals(RED)
+                && colorHistory[3].equals(RED)
+                && colorHistory[4].equals(RED);
+
+        Boolean patternHigh = patternHigh1;
+        Boolean patternLow = patternLow1;
+
+        // Boolean patternHigh = true;
+        // Boolean patternLow = true;
+
+        return new RenkoResult(patternHigh, patternLow);
+    }
+
+    public HiloResult checkHiloPatterns() {
+
+        Boolean maxSpaceHigh = (hiLoPrice1History[0] - hiLoPrice2History[0] > close - hiLoPrice1History[0])
+                ? hiLoPrice1History[0] - hiLoPrice2History[0] <= (close - hiLoPrice1History[0]) * 2
+                : close - hiLoPrice1History[0] <= (hiLoPrice1History[0] - hiLoPrice2History[0]) * 2;
+        Boolean maxSpaceLow = (hiLoPrice2History[0] - hiLoPrice1History[0] > hiLoPrice1History[0] - close)
+                ? hiLoPrice2History[0] - hiLoPrice1History[0] <= (hiLoPrice1History[0] - close) * 2
+                : hiLoPrice1History[0] - close <= (hiLoPrice2History[0] - hiLoPrice1History[0]) * 2;
+
+        boolean trendPatternHigh = hiLoPrice1History[0] - hiLoPrice2History[0] >= 10
+                // && close - hiLoPrice1History[0] <= 40
+                && close - hiLoPrice1History[0] >= 5
+                && close - hiLoPrice1History[1] >= 5
+                && hiLoPrice1History[0] > hiLoPrice1History[9]
+                && hiLoPrice2History[0] > hiLoPrice2History[9]
+                // && hiLoPrice1History[0] - hiLoPrice2History[0] <= 40
+                // && hiLoPrice1History[0] - hiLoPrice2History[0] <= (close -
+                // hiLoPrice1History[0]) * 2
+                && maxSpaceHigh;
+        boolean trendPatternLow = hiLoPrice2History[0] - hiLoPrice1History[0] >= 10
+                // && hiLoPrice1History[0] - close <= 40
+                && hiLoPrice1History[0] - close >= 5
+                && hiLoPrice1History[1] - close >= 5
+                && hiLoPrice1History[0] < hiLoPrice1History[9]
+                && hiLoPrice2History[0] < hiLoPrice2History[9]
+                // && hiLoPrice2History[0] - hiLoPrice1History[0] <= 40
+                // && hiLoPrice2History[0] - hiLoPrice1History[0] <= (hiLoPrice1History[0] -
+                // close) * 2
+                && maxSpaceLow;
+
+        // Boolean trendPatternHigh = true;
+        // Boolean trendPatternLow = true;
+
+        return new HiloResult(trendPatternHigh, trendPatternLow);
+    }
+
+    public StrengthResult checkTrendStrength() {
+
+        ColorCountResult color = HelperStrat.countColors(colorHistory);
+
+        Boolean trendStrengthHigh = color.getGreenCount() >= 12;
+        Boolean trendStrengthLow = color.getRedCount() >= 12;
+
+        // Boolean trendStrengthHigh = true;
+        // Boolean trendStrengthLow = true;
+
+        return new StrengthResult(trendStrengthHigh, trendStrengthLow);
+    }
+
+    public DirectionResult checkTrendDirection() {
+
+        ColorCountResult color1 = HelperStrat.countColorConsecutive(hiLoColor1History);
+        ColorCountResult color2 = HelperStrat.countColorConsecutive(hiLoColor2History);
+
+        boolean dirHigh = color1.getGreenCount() >= 4
+                && color2.getGreenCount() >= 4
+                && hiLoPrice1History[0] < close
+                && hiLoPrice2History[0] < close
+                && hiLoPrice1History[0] > hiLoPrice2History[0];
+
+        boolean dirShort = color1.getRedCount() >= 4
+                && color2.getRedCount() >= 4
+                && hiLoPrice1History[0] > close
+                && hiLoPrice2History[0] > close
+                && hiLoPrice1History[0] < hiLoPrice2History[0];
+
+        return new DirectionResult(dirHigh, dirShort);
+    }
+
+}
