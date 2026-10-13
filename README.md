@@ -5,9 +5,9 @@ Collection historique d'études et stratégies Java, outils de backtest et Monit
 collecte live, ni Replay, ni broker ou résultat de trading.
 
 Le développement reste sur [GitLab](https://gitlab.com/simonbdbc/motivewave-dev).
-Un miroir GitHub filtré avec historique neuf est prévu ; sa publication et sa
-synchronisation ne sont pas attestées. Les droits du code/SDK/bibliothèques et la
-provenance des SQLite restent à clarifier ; aucune licence globale n'est ajoutée.
+Le [miroir GitHub public](https://github.com/simonbdbc/motivewave-dev) reçoit un
+export filtré avec un historique public séparé. Les droits du code/SDK/bibliothèques
+et la provenance des SQLite exclues restent à clarifier ; aucune licence globale n'est ajoutée.
 
 ## Structure et prérequis
 
@@ -28,7 +28,7 @@ les versions pour présenter un succès. Python 3 sert aux contrôles ciblés de
 ## Installation et configuration
 
 ```bash
-git clone https://gitlab.com/simonbdbc/motivewave-dev.git
+git clone https://github.com/simonbdbc/motivewave-dev.git
 cd motivewave-dev
 java -version
 javac -version
