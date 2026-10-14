@@ -51,6 +51,8 @@ Après installation des dépendances et revue des droits SDK :
 
 ```bash
 cd MotiveWave_Studies
+# Le SDK ne fait pas partie du dépôt public. Le fournir hors checkout.
+export MWAVE_SDK_JAR="/chemin/prive/mwave_sdk.jar"
 # JAVA_HOME pointe vers un JDK 21 ; le toolchain Java 24 doit être installé.
 # GRADLE_88_HOME pointe vers une distribution Gradle 8.8 vérifiée.
 "$GRADLE_88_HOME/bin/gradle" --version
@@ -65,9 +67,7 @@ La recette processResources/jar des projets configurés a réussi le 10 octobre
 inclus reste à qualifier séparément. Le backend et le frontend MonitorAlgo ont
 été compilés séparément le 11 octobre 2026 ; cela ne qualifie ni leur démarrage
 complet ni MotiveWave/Replay/broker.
-Les tâches deploy/deployJar/clean peuvent écrire ou supprimer des fichiers dans
-MotiveWave Extensions de l'utilisateur : réserver ces commandes à une installation
-séparée. Elles ne font pas partie de la recette de configuration.
+Les tâches de déploiement/installation dans MotiveWave Extensions sont absentes de cet export. `classes`, `jar` et `clean` restent locaux au build Gradle.
 
 L'exécution d'une étude exige une version compatible de MotiveWave et du SDK,
 sa configuration privée et un jeu synthétique dédié. Charger une étude ou compiler
@@ -89,3 +89,9 @@ fictives ; aucun maximum de volume ni nouveau chiffre n'est revendiqué.
 ## Synchronisation du dépôt de présentation
 
 La version publique est disponible sur https://github.com/simonbdbc/motivewave-dev. Son historique est séparé de l’historique privé GitLab. Le job de publication exporte les fichiers autorisés depuis la branche dédiée `publication/github-main`, contrôle le contenu puis ajoute un commit à la suite du dernier commit public. Les anciennes branches, étiquettes, données privées et artefacts internes ne sont pas transférés. Les propositions de modification sont revues dans GitLab avant publication. Cette synchronisation des sources ne déploie pas l’application.
+
+## SDK et outils exclus du dépôt public
+
+Le JAR du SDK, sa documentation HTML et son archive ZIP restent hors export. Obtenir un SDK compatible directement auprès de MotiveWave selon vos propres droits ; pointer `MWAVE_SDK_JAR` vers ce fichier extérieur au dépôt. Le SDK utilisé lors de la recette reste privé. Les notices des sources retenues sont conservées et aucune licence supplémentaire n’est accordée. Les stratégies Java existantes ne sont pas purgées sur la seule base de leur nom de package.
+
+[Périmètre de publication et exclusions de production](PUBLICATION.md).

@@ -71,3 +71,6 @@ MonitorWeb/src/main/resources/application.properties
 **/db.properties
 MonitorAlgo/.env
 MonitorAlgo/.env.docker
+
+# MotiveWave SDK is external to this public repository.
+**/mwave_sdk.jar
